@@ -1,0 +1,25 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: smartestate
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/smartestate_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${SPRING_DATASOURCE_USERNAME:smartestate_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:smartestate_pwd}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+
+smartestate:
+  jwt-secret: ${JWT_SECRET:change_me_to_a_long_random_string}
+  rate-limit:
+    window-seconds: 60
+    max-requests: 80

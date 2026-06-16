@@ -1,0 +1,12 @@
+.DS_Store
+node_modules/
+dist/
+coverage/
+.idea/
+.vscode/
+target/
+*.log
+*.pid
+*.iml
+.env.local
+database/mysql-data/
