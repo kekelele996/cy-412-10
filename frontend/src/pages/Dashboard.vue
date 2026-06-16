@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import * as echarts from 'echarts';
 import StatCard from '../components/common/StatCard.vue';
 import RepairStatusBadge from '../components/common/RepairStatusBadge.vue';
@@ -7,18 +7,37 @@ import AnnouncementCard from '../components/common/AnnouncementCard.vue';
 import EmptyState from '../components/common/EmptyState.vue';
 import { useRepairStore } from '../stores/repairStore';
 import { usePaymentStore } from '../stores/paymentStore';
+import { useHouseholdStore } from '../stores/householdStore';
+import { useAuthStore } from '../stores/authStore';
 import { listAnnouncements, markAnnouncementRead } from '../api/announcement';
 import { useRepairStats } from '../hooks/useRepairStats';
+import { relationText } from '../utils/roleText';
+import { USER_ROLE } from '../constants/user';
 import type { Announcement } from '../types/announcement';
 
 const repairStore = useRepairStore();
 const paymentStore = usePaymentStore();
+const householdStore = useHouseholdStore();
+const authStore = useAuthStore();
 const announcements = ref<Announcement[]>([]);
 const chartEl = ref<HTMLDivElement | null>(null);
 const repairStats = useRepairStats(ref(repairStore.repairs));
 
+const isStaffOrAdmin = computed(() =>
+  authStore.currentUser?.role === USER_ROLE.STAFF || authStore.currentUser?.role === USER_ROLE.ADMIN,
+);
+
+const householdCount = computed(() => {
+  const houses = new Set(householdStore.allMembers.map((m) => `${m.building}-${m.unit}-${m.room}`));
+  return houses.size;
+});
+
 async function refresh() {
-  await Promise.all([repairStore.fetchRepairs(), paymentStore.fetchPayments()]);
+  await Promise.all([
+    repairStore.fetchRepairs(),
+    paymentStore.fetchPayments(),
+    isStaffOrAdmin.value ? householdStore.fetchAllHouseholds() : Promise.resolve(),
+  ]);
   announcements.value = await listAnnouncements();
 }
 
@@ -62,7 +81,8 @@ watch(() => repairStore.repairs.length, renderChart);
       <StatCard label="待分配工单" :value="repairStats.pending" hint="需物业派单" tone="amber" />
       <StatCard label="处理中工单" :value="repairStats.processing" hint="含已分配" tone="blue" />
       <StatCard label="本月待收" :value="`¥${paymentStore.unpaidAmount.toFixed(2)}`" hint="支付宝沙箱模拟" tone="green" />
-      <StatCard label="公告阅读" :value="announcements.reduce((sum, item) => sum + item.readCount, 0)" hint="累计阅读数" tone="red" />
+      <StatCard v-if="isStaffOrAdmin" label="登记住户" :value="householdCount" hint="已绑定房屋" tone="red" />
+      <StatCard v-else label="公告阅读" :value="announcements.reduce((sum, item) => sum + item.readCount, 0)" hint="累计阅读数" tone="red" />
     </div>
 
     <div class="page-grid two-col">
@@ -80,7 +100,20 @@ watch(() => repairStore.repairs.length, renderChart);
         </div>
       </section>
 
-      <section class="section-panel">
+      <section v-if="isStaffOrAdmin" class="section-panel">
+        <div class="section-title">
+          <h2>住户概览</h2>
+        </div>
+        <div v-if="householdStore.allMembers.length" class="mini-household">
+          <div v-for="member in householdStore.allMembers.slice(0, 5)" :key="member.id" class="mini-household__row">
+            <span>{{ member.building }} {{ member.unit }} {{ member.room }}</span>
+            <span>{{ member.user?.nickname || '未知' }} · {{ relationText(member.relation) }}</span>
+          </div>
+        </div>
+        <EmptyState v-else title="暂无住户" />
+      </section>
+
+      <section v-else class="section-panel">
         <div class="section-title">
           <h2>最新公告</h2>
         </div>
@@ -116,5 +149,24 @@ watch(() => repairStore.repairs.length, renderChart);
   align-items: center;
   padding: 10px 0;
   border-top: 1px solid #e5ecdf;
+}
+
+.mini-household {
+  display: grid;
+  gap: 0;
+}
+
+.mini-household__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid #e5ecdf;
+  font-size: 14px;
+}
+
+.mini-household__row span:last-child {
+  color: #778273;
+  font-size: 13px;
 }
 </style>

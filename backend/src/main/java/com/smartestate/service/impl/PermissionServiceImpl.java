@@ -20,7 +20,18 @@ public class PermissionServiceImpl implements PermissionService {
                     Permissions.PAYMENT_VIEW,
                     Permissions.PAYMENT_PAY,
                     Permissions.ANNOUNCEMENT_VIEW,
-                    Permissions.USER_PROFILE
+                    Permissions.USER_PROFILE,
+                    Permissions.HOUSEHOLD_VIEW,
+                    Permissions.HOUSEHOLD_MANAGE
+            ),
+            UserConstants.CO_RESIDENT, List.of(
+                    Permissions.DASHBOARD_VIEW,
+                    Permissions.REPAIR_VIEW,
+                    Permissions.REPAIR_CREATE,
+                    Permissions.PAYMENT_VIEW,
+                    Permissions.ANNOUNCEMENT_VIEW,
+                    Permissions.USER_PROFILE,
+                    Permissions.HOUSEHOLD_VIEW
             ),
             UserConstants.STAFF, List.of(
                     Permissions.DASHBOARD_VIEW,
@@ -30,7 +41,8 @@ public class PermissionServiceImpl implements PermissionService {
                     Permissions.PAYMENT_VIEW,
                     Permissions.ANNOUNCEMENT_VIEW,
                     Permissions.ANNOUNCEMENT_PUBLISH,
-                    Permissions.USER_PROFILE
+                    Permissions.USER_PROFILE,
+                    Permissions.HOUSEHOLD_VIEW
             ),
             UserConstants.ADMIN, List.of(
                     Permissions.DASHBOARD_VIEW,
@@ -43,7 +55,9 @@ public class PermissionServiceImpl implements PermissionService {
                     Permissions.ANNOUNCEMENT_VIEW,
                     Permissions.ANNOUNCEMENT_PUBLISH,
                     Permissions.USER_PROFILE,
-                    Permissions.OPERATION_LOG_VIEW
+                    Permissions.OPERATION_LOG_VIEW,
+                    Permissions.HOUSEHOLD_VIEW,
+                    Permissions.HOUSEHOLD_MANAGE
             )
     );
 

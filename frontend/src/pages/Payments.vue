@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import PaymentItem from '../components/common/PaymentItem.vue';
 import EmptyState from '../components/common/EmptyState.vue';
 import StatCard from '../components/common/StatCard.vue';
 import { usePaymentStore } from '../stores/paymentStore';
+import { useAuthStore } from '../stores/authStore';
 import { calculatePropertyFee } from '../utils/feeCalculator';
 
 const paymentStore = usePaymentStore();
+const authStore = useAuthStore();
+
+const isCoResident = computed(() => authStore.currentUser?.role === 'co-resident');
 
 async function pay(id: number) {
   await paymentStore.pay(id);
@@ -27,7 +31,7 @@ onMounted(paymentStore.fetchPayments);
     </div>
     <section class="section-panel">
       <div class="section-title">
-        <h2>账单列表</h2>
+        <h2>{{ isCoResident ? '本户账单' : '账单列表' }}</h2>
       </div>
       <div v-if="paymentStore.payments.length" class="list-stack">
         <PaymentItem v-for="payment in paymentStore.payments" :key="payment.id" :payment="payment" @pay="pay" />

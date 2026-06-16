@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash VARCHAR(160) NOT NULL,
   nickname VARCHAR(64) NOT NULL,
   avatar VARCHAR(255) DEFAULT NULL,
-  role ENUM('resident','staff','admin') NOT NULL DEFAULT 'resident',
+  role ENUM('resident','co-resident','staff','admin') NOT NULL DEFAULT 'resident',
   building VARCHAR(32) DEFAULT NULL,
   unit VARCHAR(32) DEFAULT NULL,
   room VARCHAR(32) DEFAULT NULL,
@@ -90,6 +90,22 @@ CREATE TABLE IF NOT EXISTS role_permissions (
   UNIQUE KEY uk_role_permission (role_code, permission_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS house_members (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  building VARCHAR(32) NOT NULL,
+  unit VARCHAR(32) NOT NULL,
+  room VARCHAR(32) NOT NULL,
+  user_id BIGINT NOT NULL,
+  relation ENUM('owner','co-resident') NOT NULL DEFAULT 'co-resident',
+  invited_by BIGINT DEFAULT NULL,
+  status ENUM('active','removed') NOT NULL DEFAULT 'active',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_house_members_user FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT fk_house_members_inviter FOREIGN KEY (invited_by) REFERENCES users(id),
+  INDEX idx_house_members_house (building, unit, room),
+  INDEX idx_house_members_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS operation_logs (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   user_id BIGINT DEFAULT NULL,
@@ -105,6 +121,7 @@ CREATE TABLE IF NOT EXISTS operation_logs (
 
 INSERT INTO roles(code, name) VALUES
 ('resident', '业主'),
+('co-resident', '同住人'),
 ('staff', '物业'),
 ('admin', '管理员')
 ON DUPLICATE KEY UPDATE name = VALUES(name);
@@ -120,7 +137,9 @@ INSERT INTO permissions(code, name) VALUES
 ('announcement:view', '查看公告'),
 ('announcement:publish', '发布公告'),
 ('user:profile', '编辑个人资料'),
-('operationLog:view', '查看操作日志')
+('operationLog:view', '查看操作日志'),
+('household:view', '查看住户'),
+('household:manage', '管理同住人')
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 INSERT INTO role_permissions(role_code, permission_code) VALUES
@@ -131,6 +150,15 @@ INSERT INTO role_permissions(role_code, permission_code) VALUES
 ('resident','payment:pay'),
 ('resident','announcement:view'),
 ('resident','user:profile'),
+('resident','household:view'),
+('resident','household:manage'),
+('co-resident','dashboard:view'),
+('co-resident','repair:view'),
+('co-resident','repair:create'),
+('co-resident','payment:view'),
+('co-resident','announcement:view'),
+('co-resident','user:profile'),
+('co-resident','household:view'),
 ('staff','dashboard:view'),
 ('staff','repair:view'),
 ('staff','repair:assign'),
@@ -139,6 +167,7 @@ INSERT INTO role_permissions(role_code, permission_code) VALUES
 ('staff','announcement:view'),
 ('staff','announcement:publish'),
 ('staff','user:profile'),
+('staff','household:view'),
 ('admin','dashboard:view'),
 ('admin','repair:view'),
 ('admin','repair:create'),
@@ -149,13 +178,16 @@ INSERT INTO role_permissions(role_code, permission_code) VALUES
 ('admin','announcement:view'),
 ('admin','announcement:publish'),
 ('admin','user:profile'),
-('admin','operationLog:view')
+('admin','operationLog:view'),
+('admin','household:view'),
+('admin','household:manage')
 ON DUPLICATE KEY UPDATE permission_code = VALUES(permission_code);
 
 INSERT INTO users(id, phone, password_hash, nickname, avatar, role, building, unit, room) VALUES
 (1, '13800000001', '1000:demo-admin-salt:74d2c1e9f73', '林经理', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200', 'admin', '物业中心', 'A', '001'),
 (2, '13800000002', '1000:demo-staff-salt:4e6f8a2121a', '周管家', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200', 'staff', '物业中心', 'B', '002'),
-(3, '13800000003', '1000:demo-resident-salt:8d9e3c6b2a1', '陈业主', 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=200', 'resident', '8栋', '2单元', '1201')
+(3, '13800000003', '1000:demo-resident-salt:8d9e3c6b2a1', '陈业主', 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=200', 'resident', '8栋', '2单元', '1201'),
+(4, '13800000004', '1000:demo-coresident-salt:a1b2c3d4e5f', '王同住', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200', 'co-resident', '8栋', '2单元', '1201')
 ON DUPLICATE KEY UPDATE nickname = VALUES(nickname), role = VALUES(role);
 
 INSERT INTO repairs(id, user_id, title, description, type, images, status, handler_id, rating) VALUES
@@ -175,3 +207,8 @@ INSERT INTO announcements(id, title, content, category, publisher_id, publish_at
 (2, '端午社区便民服务开放预约', '本周六开放家电清洗、磨刀、义诊服务，业主可在物业前台预约。', 'event', 2, '2026-06-12 14:00:00', 0, 128),
 (3, '6月公共区域消杀通知', '6月18日9:00-11:30进行楼道及地库消杀，请提前收好门口物品。', 'notice', 2, '2026-06-10 08:40:00', 0, 87)
 ON DUPLICATE KEY UPDATE title = VALUES(title), top = VALUES(top);
+
+INSERT INTO house_members(building, unit, room, user_id, relation, invited_by, status) VALUES
+('8栋', '2单元', '1201', 3, 'owner', NULL, 'active'),
+('8栋', '2单元', '1201', 4, 'co-resident', 3, 'active')
+ON DUPLICATE KEY UPDATE status = VALUES(status);

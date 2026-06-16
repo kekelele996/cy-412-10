@@ -12,6 +12,8 @@ public final class Permissions {
     public static final String ANNOUNCEMENT_PUBLISH = "announcement:publish";
     public static final String USER_PROFILE = "user:profile";
     public static final String OPERATION_LOG_VIEW = "operationLog:view";
+    public static final String HOUSEHOLD_VIEW = "household:view";
+    public static final String HOUSEHOLD_MANAGE = "household:manage";
 
     private Permissions() {
     }

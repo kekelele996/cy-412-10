@@ -2,9 +2,13 @@
 import type { Payment } from '../../types/payment';
 import { feeStatusText } from '../../utils/roleText';
 import PermissionButton from './PermissionButton.vue';
+import { useAuthStore } from '../../stores/authStore';
 
-defineProps<{ payment: Payment }>();
+const props = defineProps<{ payment: Payment }>();
 defineEmits<{ pay: [id: number] }>();
+
+const authStore = useAuthStore();
+const isCoResident = authStore.currentUser?.role === 'co-resident';
 
 const feeTypeText: Record<string, string> = {
   property: '物业费',
@@ -17,7 +21,10 @@ const feeTypeText: Record<string, string> = {
   <article class="payment-item">
     <div>
       <strong>{{ feeTypeText[payment.feeType] }}</strong>
-      <span>{{ payment.month }} · {{ feeStatusText(payment.status) }}</span>
+      <span>
+        {{ payment.month }} · {{ feeStatusText(payment.status) }}
+        <template v-if="isCoResident && payment.user"> · {{ payment.user.nickname }}</template>
+      </span>
     </div>
     <div class="payment-item__right">
       <strong>¥{{ Number(payment.amount).toFixed(2) }}</strong>

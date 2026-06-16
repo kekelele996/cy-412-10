@@ -35,6 +35,7 @@ public final class CommonFormatter {
     public static String roleText(String role) {
         return switch (role) {
             case UserConstants.RESIDENT -> "业主";
+            case UserConstants.CO_RESIDENT -> "同住人";
             case UserConstants.STAFF -> "物业";
             case UserConstants.ADMIN -> "管理员";
             default -> role;

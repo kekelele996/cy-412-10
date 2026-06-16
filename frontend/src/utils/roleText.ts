@@ -5,6 +5,10 @@ export function roleText(role: UserRole) {
   return USER_ROLE_TEXT[role] || role;
 }
 
+export function relationText(relation: string) {
+  return { owner: '业主', 'co-resident': '同住人' }[relation] || relation;
+}
+
 export function repairStatusText(status: RepairStatus) {
   return REPAIR_STATUS_TEXT[status] || status;
 }

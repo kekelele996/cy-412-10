@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import AvatarUploader from '../components/common/AvatarUploader.vue';
 import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
 import { roleText } from '../utils/roleText';
 
+const router = useRouter();
 const authStore = useAuthStore();
 const userStore = useUserStore();
 
@@ -61,6 +63,7 @@ async function save() {
         </el-form-item>
       </div>
       <el-button type="primary" :loading="userStore.saving" @click="save">保存资料</el-button>
+      <el-button plain @click="router.push('/household')">管理同住人</el-button>
     </el-form>
   </section>
 </template>

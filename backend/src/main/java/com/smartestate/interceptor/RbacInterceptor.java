@@ -31,7 +31,11 @@ public class RbacInterceptor implements HandlerInterceptor {
             Map.entry("GET /announcements", Permissions.ANNOUNCEMENT_VIEW),
             Map.entry("POST /announcements", Permissions.ANNOUNCEMENT_PUBLISH),
             Map.entry("POST /announcements/.*/read", Permissions.ANNOUNCEMENT_VIEW),
-            Map.entry("GET /operation-logs", Permissions.OPERATION_LOG_VIEW)
+            Map.entry("GET /operation-logs", Permissions.OPERATION_LOG_VIEW),
+            Map.entry("GET /household", Permissions.HOUSEHOLD_VIEW),
+            Map.entry("GET /household/all", Permissions.HOUSEHOLD_VIEW),
+            Map.entry("POST /household", Permissions.HOUSEHOLD_MANAGE),
+            Map.entry("DELETE /household/.*", Permissions.HOUSEHOLD_MANAGE)
     );
 
     public RbacInterceptor(PermissionService permissionService) {

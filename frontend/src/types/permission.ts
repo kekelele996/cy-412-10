@@ -11,7 +11,9 @@ export type PermissionCode =
   | 'announcement:view'
   | 'announcement:publish'
   | 'user:profile'
-  | 'operationLog:view';
+  | 'operationLog:view'
+  | 'household:view'
+  | 'household:manage';
 
 export interface RoutePermissionMeta {
   permission: PermissionCode;
